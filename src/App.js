@@ -1,25 +1,59 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import {
+  BrowserRouter as Router,
+  Switch,
+  Route,
+  Redirect
+} from "react-router-dom";
+import Login from './page/Login';
+import Home from './page/Home';
+
+export const StateContext = React.createContext(null);
+
+const INIT_STATE = {
+  user: null,
+  arrayString: '',
+  result: []
+}
+
+function PrivateRoute({ user, children, ...rest }) {
+  return (
+    <Route
+      {...rest}
+      render={({ location }) =>
+        user
+          ? children
+          : (
+            <Redirect
+              to={{
+                pathname: "/login",
+                state: { from: location }
+              }}
+            />
+          )
+      }
+    />
+  );
+}
 
 function App() {
+  const [state, setState] = useState(INIT_STATE);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Switch>
+        <Route path="/login">
+          <StateContext.Provider value={[state, setState]}>
+            <Login />
+          </StateContext.Provider>
+        </Route>
+        <PrivateRoute exact path="/" user={state.user}>
+          <StateContext.Provider value={[state, setState]}>
+            <Home />
+          </StateContext.Provider>
+        </PrivateRoute>
+      </Switch>
+    </Router >
   );
 }
 
